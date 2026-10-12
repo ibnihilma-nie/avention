@@ -1606,7 +1606,7 @@
         {url:'bonus-win.example', category:'Mirror / redirect', status:'Terverifikasi Berisiko', date:'Hari ini'},
         {url:'fastspin.example', category:'Website judi / taruhan', status:'Dalam Verifikasi', date:'Kemarin'}
       ];
-      let demoReports = JSON.parse(localStorage.getItem('aventionReports') || 'null') || demoReportsDefault;
+      let demoReports = JSON.parse(localStorage.getItem('aventionReports') || '[]');
 
       function renderCommunityReports(){
         const el=document.getElementById('community-report-list'); if(!el) return;
@@ -1618,15 +1618,15 @@
       }
       function submitCommunityReport(e){
         e.preventDefault(); const url=document.getElementById('report-url').value.trim(); const cat=document.getElementById('report-category').value;
-        demoReports.unshift({url,category:cat,status:'Dalam Verifikasi',date:'Baru saja'}); localStorage.setItem('aventionReports',JSON.stringify(demoReports)); renderCommunityReports(); e.target.reset(); alert('Laporan demo berhasil ditambahkan ke antrean verifikasi.');
+        const domain=parseDomain(url); if(!domain){alert('Masukkan URL website yang valid (http/https).');return;} if(demoReports.some(r=>r.url===domain)){alert('Domain ini sudah ada pada daftar laporan perangkat ini.');return;} demoReports.unshift({url:domain,category:cat,status:'Dilaporkan (belum diverifikasi)',date:new Date().toLocaleDateString('id-ID')}); localStorage.setItem('aventionReports',JSON.stringify(demoReports)); renderCommunityReports(); e.target.reset(); alert('Laporan tersimpan di perangkat ini. Belum terkirim ke pihak luar atau otoritas.');
       }
       function clearDemoReports(){demoReports=[];localStorage.setItem('aventionReports','[]');renderCommunityReports();}
       function checkRiskUrl(){
         const input=document.getElementById('risk-url-input'); const box=document.getElementById('risk-url-result'); if(!input||!box) return; const value=input.value.trim();
         if(!value){box.className='mt-5 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm';box.textContent='Masukkan URL terlebih dahulu.';box.classList.remove('hidden');return;}
-        const risky=/bet|slot|casino|judi|spin|win|bonus|togel/i.test(value);
+        const domain=parseDomain(value); if(!domain){box.className='mt-5 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm';box.textContent='URL tidak valid; masukkan alamat web http/https.';box.classList.remove('hidden');return;} const risky=/(^|[.-])(bet|slot|casino|judi|spin|togel|taruhan)([.-]|$)/i.test(domain); const reported=demoReports.some(r=>r.url===domain);
         box.className='mt-5 p-4 rounded-xl border text-sm '+(risky?'border-red-200 bg-red-50 text-red-700':'border-emerald-200 bg-emerald-50 text-emerald-700');
-        box.innerHTML=risky?'<b>Sinyal risiko ditemukan (simulasi).</b><br>Nama URL memiliki pola kata yang perlu diperiksa lebih lanjut. Hasil ini bukan verifikasi server nyata.':'<b>Tidak ada sinyal sederhana yang terdeteksi.</b><br>Prototype ini belum melakukan pemeriksaan jaringan/database nyata.'; box.classList.remove('hidden');
+        box.textContent=reported?'Domain ini pernah dilaporkan dari perangkat ini. Laporan belum diverifikasi.':risky?'Ditemukan kata kunci berisiko pada nama domain. Ini hanya pemeriksaan pola, bukan hasil AI atau konfirmasi situs judi.':'Tidak ditemukan pola kata kunci pada domain. Hasil ini TIDAK membuktikan situs aman. Pemeriksaan online belum tersedia.'; box.classList.remove('hidden');
       }
 
       const missions=[
@@ -1635,7 +1635,10 @@
         {id:'m3',title:'Catat satu aktivitas positif',xp:25},
         {id:'m4',title:'Tulis refleksi singkat',xp:30}
       ];
-      let missionDone=JSON.parse(localStorage.getItem('aventionMissionDone')||'{}');
+      const todayKey=()=>new Date().toLocaleDateString('en-CA');
+      let missionHistory=JSON.parse(localStorage.getItem('aventionMissionHistory')||'{}');
+      let missionDone=missionHistory[todayKey()]||{};
+      function persistMissions(){missionHistory[todayKey()]=missionDone;localStorage.setItem('aventionMissionHistory',JSON.stringify(missionHistory));}
       let positiveActivities=JSON.parse(localStorage.getItem('aventionPositive')||'[]');
       function renderMissions(){
         const el=document.getElementById('mission-list'); if(!el) return; let xp=0,done=0;
@@ -1643,17 +1646,18 @@
         const p=document.getElementById('mission-progress'); if(p)p.textContent=`${done}/${missions.length} selesai`; const x=document.getElementById('quest-xp'); if(x)x.textContent=`${xp} XP`;
         renderBadges(done,xp);
       }
-      function toggleMission(id){missionDone[id]=!missionDone[id];localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));renderMissions();}
-      function renderBadges(done,xp){const el=document.getElementById('badge-list');if(!el)return;const badges=[['First Step',done>=1],['Daily Hero',done>=4],['XP 100',xp>=100],['14 Day Streak',true]];const unlocked=badges.filter(b=>b[1]).length;const c=document.getElementById('quest-badge-count');if(c)c.textContent=unlocked;el.innerHTML=badges.map(([n,u])=>`<div class="p-3 rounded-xl text-center border ${u?'border-amber-200 bg-amber-50':'border-borderLight bg-slate-50 opacity-50'}"><div class="text-xl">${u?'🏅':'🔒'}</div><div class="text-[10px] font-bold text-navy mt-1">${n}</div></div>`).join('');}
+      function toggleMission(id){missionDone[id]=!missionDone[id];persistMissions();renderMissions();}
+      function renderBadges(done,xp){const el=document.getElementById('badge-list');if(!el)return;const badges=[['First Step',done>=1],['Daily Hero',done>=4],['XP 100',xp>=100],['14 Day Streak',calculateStreak()>=14]];const unlocked=badges.filter(b=>b[1]).length;const c=document.getElementById('quest-badge-count');if(c)c.textContent=unlocked;el.innerHTML=badges.map(([n,u])=>`<div class="p-3 rounded-xl text-center border ${u?'border-amber-200 bg-amber-50':'border-borderLight bg-slate-50 opacity-50'}"><div class="text-xl">${u?'🏅':'🔒'}</div><div class="text-[10px] font-bold text-navy mt-1">${n}</div></div>`).join('');}
+      function calculateStreak(){let count=0;const d=new Date();for(let n=0;n<365;n++){const key=d.toLocaleDateString('en-CA');const values=missionHistory[key];if(!values || !missions.some(m=>values[m.id]))break;count++;d.setDate(d.getDate()-1);}return count;}
       function renderPositive(){const el=document.getElementById('positive-list');if(!el)return;el.innerHTML=positiveActivities.length?positiveActivities.slice(0,6).map((a,i)=>`<div class="flex justify-between gap-2 p-2.5 rounded-lg bg-slate-50"><span>${escapeHtml(a)}</span><button onclick="removePositive(${i})" class="text-textSecondary">×</button></div>`).join(''):'<p class="text-textSecondary">Belum ada aktivitas.</p>';}
-      function addPositiveActivity(){const i=document.getElementById('positive-activity');if(!i||!i.value.trim())return;positiveActivities.unshift(i.value.trim());localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));i.value='';renderPositive();}
+      function addPositiveActivity(){const i=document.getElementById('positive-activity');if(!i||!i.value.trim())return;positiveActivities.unshift(i.value.trim());localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));missionDone.m3=true;persistMissions();renderMissions();i.value='';renderPositive();}
       function removePositive(i){positiveActivities.splice(i,1);localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));renderPositive();}
 
       function sendBuddyMessage(e){e.preventDefault();const input=document.getElementById('buddy-input');const chat=document.getElementById('buddy-chat');const msg=input.value.trim();if(!msg)return;chat.innerHTML+=`<div class="ml-auto max-w-[80%] p-3 rounded-2xl rounded-tr-sm bg-primaryBlue text-white text-xs">${escapeHtml(msg)}</div>`;input.value='';setTimeout(()=>{let reply='Terima kasih sudah mencatat itu. Coba pilih satu langkah kecil yang aman untuk 10 menit berikutnya.';if(/dorongan|ingin main|judi|slot/i.test(msg)) reply='Kalau dorongannya sedang kuat, kamu bisa gunakan Jeda 10 Menit, menjauh dari metode pembayaran, atau menghubungi pendukung terpercaya. Jika situasinya terasa tidak aman, cari bantuan profesional atau layanan darurat setempat.';else if(/sedih|cemas|stres|marah/i.test(msg)) reply='Kondisi emosional bisa menjadi pemicu. Coba beri nama emosinya, nilai intensitas 1–5, lalu lakukan grounding atau aktivitas pengganti yang sederhana.';chat.innerHTML+=`<div class="max-w-[80%] p-3 rounded-2xl rounded-tl-sm bg-white border border-borderLight text-xs text-textPrimary">${reply}</div>`;chat.scrollTop=chat.scrollHeight;},450);chat.scrollTop=chat.scrollHeight;}
-      function setCheckin(v,btn){localStorage.setItem('aventionCheckin',String(v));document.querySelectorAll('#mood-buttons button').forEach(b=>b.classList.remove('ring-2','ring-primaryBlue'));btn.classList.add('ring-2','ring-primaryBlue');const n=document.getElementById('checkin-note');if(n)n.textContent=`Check-in tersimpan: intensitas ${v}/5.`;}
-      function saveReminder(){const t=document.getElementById('reminder-time').value;localStorage.setItem('aventionReminder',t);document.getElementById('reminder-status').textContent=`Reminder demo disimpan pukul ${t}. Browser tidak akan mengirim notifikasi tanpa backend/permission.`;}
-      function saveReflection(){const v=document.getElementById('reflection-input').value.trim();if(!v)return;localStorage.setItem('aventionReflection',v);document.getElementById('reflection-status').textContent='Refleksi tersimpan secara lokal pada browser demo ini.';missionDone.m4=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
-      function startCoping(name){document.getElementById('coping-status').textContent=`${name} dipilih. Luangkan 2–5 menit dan fokus pada langkahnya.`;missionDone.m2=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
+      function setCheckin(v,btn){localStorage.setItem('aventionCheckin:'+todayKey(),String(v));missionDone.m1=true;persistMissions();renderMissions();document.querySelectorAll('#mood-buttons button').forEach(b=>b.classList.remove('ring-2','ring-primaryBlue'));btn.classList.add('ring-2','ring-primaryBlue');const n=document.getElementById('checkin-note');if(n)n.textContent=`Check-in tersimpan: intensitas ${v}/5.`;}
+      async function saveReminder(){const t=document.getElementById('reminder-time').value;if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)){alert('Pilih waktu yang valid.');return;}localStorage.setItem('aventionReminder',t);let permission='tidak tersedia';if('Notification' in window && window.isSecureContext){permission=await Notification.requestPermission();}document.getElementById('reminder-status').textContent=`Pengingat pukul ${t} tersimpan. Notifikasi: ${permission}. Halaman perlu tetap terbuka agar pengingat muncul.`;}
+      function saveReflection(){const v=document.getElementById('reflection-input').value.trim();if(!v)return;localStorage.setItem('aventionReflection',v);document.getElementById('reflection-status').textContent='Refleksi tersimpan hanya pada perangkat ini.';missionDone.m4=true;persistMissions();renderMissions();}
+      function startCoping(name){document.getElementById('coping-status').textContent=`${name} dipilih. Luangkan 2–5 menit dan fokus pada langkahnya.`;missionDone.m2=true;persistMissions();renderMissions();}
 
       function demoBooking(name){const el=document.getElementById('support-demo-message');if(!el)return;el.classList.remove('hidden');el.innerHTML=`<b>${escapeHtml(name)}</b><br>Alur prototype dibuka. Pada implementasi nyata, bagian ini akan terhubung dengan direktori mitra, jadwal, persetujuan privasi, dan backend.`;}
 
@@ -1662,10 +1666,12 @@
       function calculateMoneyGuard(){const income=Math.max(0,+document.getElementById('money-income').value||0);const essentials=Math.round(income*.60),goals=Math.round(income*.25),flex=Math.round(income*.15);const el=document.getElementById('money-result');el.innerHTML=`<div class="space-y-2"><div class="flex justify-between"><span>Kebutuhan utama</span><b>Rp ${essentials.toLocaleString('id-ID')}</b></div><div class="flex justify-between"><span>Tabungan / tujuan</span><b>Rp ${goals.toLocaleString('id-ID')}</b></div><div class="flex justify-between"><span>Fleksibel</span><b>Rp ${flex.toLocaleString('id-ID')}</b></div><p class="text-[10px] text-slate-300 pt-2">Pembagian ini hanya contoh budgeting 60/25/15 dan bukan nasihat keuangan personal.</p></div>`;el.classList.remove('hidden');}
       function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));}
 
-      function initTrackerFeatures(){renderCommunityReports();renderMissions();renderPositive();const r=localStorage.getItem('aventionReminder');if(r&&document.getElementById('reminder-status'))document.getElementById('reminder-status').textContent=`Reminder demo: ${r}`;const ref=localStorage.getItem('aventionReflection');if(ref&&document.getElementById('reflection-input'))document.getElementById('reflection-input').value=ref;}
+      function parseDomain(value){try{const u=new URL(/^https?:\/\//i.test(value)?value:'https://'+value);if(!['http:','https:'].includes(u.protocol)||!u.hostname.includes('.')||u.username||u.password)return null;return u.hostname.toLowerCase().replace(/\.$/,'');}catch{return null;}}
+      function initTrackerFeatures(){renderCommunityReports();renderMissions();renderPositive();const r=localStorage.getItem('aventionReminder');if(r&&document.getElementById('reminder-status'))document.getElementById('reminder-status').textContent=`Pengingat tersimpan: ${r}. Halaman harus tetap terbuka.`;const ref=localStorage.getItem('aventionReflection');if(ref&&document.getElementById('reflection-input'))document.getElementById('reflection-input').value=ref;}
 
       lucide.createIcons();
       initTrackerFeatures();
+      setInterval(()=>{const time=localStorage.getItem('aventionReminder');if(!time||!('Notification' in window)||Notification.permission!=='granted')return;const now=new Date();const hm=now.toTimeString().slice(0,5);const key='aventionLastReminder';if(hm===time&&localStorage.getItem(key)!==todayKey()){new Notification('AVENTION — Pengingat Pemulihan',{body:'Saatnya check-in dan menjalankan satu aktivitas positif.'});localStorage.setItem(key,todayKey());}},30000);
         renderQuestion();
       };
     </script>
