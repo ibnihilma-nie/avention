@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1319,8 +1321,20 @@
           <div class="mb-8"><span class="text-xs font-bold tracking-widest text-cyanAccent">LIFEPATH</span><h1 class="font-heading text-3xl sm:text-4xl font-extrabold text-navy">Arah baru setelah pemulihan.</h1><p class="text-sm text-textSecondary mt-2">Empat jalur pengembangan: SkillPath, Opportunity Map, BizStart, dan MoneyGuard.</p></div>
           <div class="grid md:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-3xl border border-borderLight shadow-sm"><div class="flex items-center gap-3 mb-4"><i data-lucide="graduation-cap" class="w-7 h-7 text-primaryBlue"></i><h2 class="font-heading font-bold text-xl text-navy">SkillPath</h2></div><p class="text-xs text-textSecondary mb-4">Rencana belajar bertahap berdasarkan profil kemampuan.</p><div class="space-y-3 text-xs"><div class="p-3 rounded-xl bg-softBg"><b>1. Fondasi Digital</b><span class="block text-textSecondary mt-1">Literasi digital, keamanan akun, dan produktivitas.</span></div><div class="p-3 rounded-xl bg-softBg"><b>2. Skill Pilihan</b><span class="block text-textSecondary mt-1">Pilih jalur kreatif, bisnis, teknologi, atau pelayanan.</span></div><div class="p-3 rounded-xl bg-softBg"><b>3. Portofolio</b><span class="block text-textSecondary mt-1">Buat satu hasil nyata untuk menunjukkan kemampuan.</span></div></div></div>
-            <div class="bg-white p-6 rounded-3xl border border-borderLight shadow-sm"><div class="flex items-center gap-3 mb-4"><i data-lucide="map-pinned" class="w-7 h-7 text-primaryBlue"></i><h2 class="font-heading font-bold text-xl text-navy">Opportunity Map</h2></div><p class="text-xs text-textSecondary mb-4">Contoh peta peluang yang bisa dieksplorasi.</p><div class="grid grid-cols-2 gap-3 text-xs"><button onclick="showOpportunity('Magang & entry-level')" class="p-4 rounded-xl border border-borderLight text-left hover:border-primaryBlue">Magang & entry-level</button><button onclick="showOpportunity('Freelance')" class="p-4 rounded-xl border border-borderLight text-left hover:border-primaryBlue">Freelance</button><button onclick="showOpportunity('Pelatihan')" class="p-4 rounded-xl border border-borderLight text-left hover:border-primaryBlue">Pelatihan</button><button onclick="showOpportunity('Komunitas produktif')" class="p-4 rounded-xl border border-borderLight text-left hover:border-primaryBlue">Komunitas produktif</button></div><p id="opportunity-message" class="text-[11px] text-textSecondary mt-3"></p></div>
-            <div class="bg-white p-6 rounded-3xl border border-borderLight shadow-sm"><div class="flex items-center gap-3 mb-4"><i data-lucide="rocket" class="w-7 h-7 text-primaryBlue"></i><h2 class="font-heading font-bold text-xl text-navy">BizStart</h2></div><p class="text-xs text-textSecondary mb-4">Panduan awal usaha sederhana.</p><div class="grid grid-cols-3 gap-2 text-center text-[11px]"><div class="p-3 rounded-xl bg-softBg"><b>Ide</b><span class="block mt-1 text-textSecondary">Masalah apa yang ingin diselesaikan?</span></div><div class="p-3 rounded-xl bg-softBg"><b>Validasi</b><span class="block mt-1 text-textSecondary">Tanya calon pengguna.</span></div><div class="p-3 rounded-xl bg-softBg"><b>Mulai Kecil</b><span class="block mt-1 text-textSecondary">Uji versi paling sederhana.</span></div></div></div>
+            <div class="bg-white p-6 rounded-3xl border border-borderLight shadow-sm"><div class="flex items-center gap-3 mb-4"><i data-lucide="map-pinned" class="w-7 h-7 text-primaryBlue"></i><h2 class="font-heading font-bold text-xl text-navy">Opportunity Map</h2></div>
+              <p class="text-xs text-textSecondary mb-4">Peta nyata berbasis OpenStreetMap. Cari tempat UMKM, pelatihan, atau ruang komunitas dari data terbuka di sekitar lokasi pilihanmu. Titik lokasi belum tentu menawarkan lowongan atau kegiatan aktif.</p>
+              <div class="flex flex-wrap gap-2 mb-3 text-xs">
+                <button type="button" onclick="findNearbyOpportunities('umkm')" class="px-3 py-2 border rounded-lg hover:bg-softBg">UMKM & usaha</button>
+                <button type="button" onclick="findNearbyOpportunities('training')" class="px-3 py-2 border rounded-lg hover:bg-softBg">Tempat pelatihan</button>
+                <button type="button" onclick="findNearbyOpportunities('community')" class="px-3 py-2 border rounded-lg hover:bg-softBg">Ruang komunitas</button>
+                <button type="button" onclick="locateOpportunityUser()" class="px-3 py-2 bg-primaryBlue text-white rounded-lg">Lokasi saya</button>
+              </div>
+              <div id="opportunity-map" style="height:320px;min-height:320px;z-index:0" class="rounded-xl border border-borderLight" role="region" aria-label="Peta interaktif lokasi peluang"></div>
+              <p id="opportunity-message" role="status" aria-live="polite" class="text-[11px] text-textSecondary mt-3">Peta awal di Jakarta. Geser peta atau gunakan Lokasi saya, kemudian pilih kategori untuk mencari lokasi dari OpenStreetMap.</p>
+              <div id="opportunity-results" class="mt-3 space-y-2 max-h-52 overflow-y-auto text-xs"></div>
+              <p class="mt-2 text-[10px] text-textSecondary">Sumber lokasi: kontributor OpenStreetMap (via Overpass API). Data dapat tidak lengkap. Lokasi pengguna hanya digunakan saat Anda memilih tombol lokasi.</p>
+            </div>
+                        <div class="bg-white p-6 rounded-3xl border border-borderLight shadow-sm"><div class="flex items-center gap-3 mb-4"><i data-lucide="rocket" class="w-7 h-7 text-primaryBlue"></i><h2 class="font-heading font-bold text-xl text-navy">BizStart</h2></div><p class="text-xs text-textSecondary mb-4">Panduan awal usaha sederhana.</p><div class="grid grid-cols-3 gap-2 text-center text-[11px]"><div class="p-3 rounded-xl bg-softBg"><b>Ide</b><span class="block mt-1 text-textSecondary">Masalah apa yang ingin diselesaikan?</span></div><div class="p-3 rounded-xl bg-softBg"><b>Validasi</b><span class="block mt-1 text-textSecondary">Tanya calon pengguna.</span></div><div class="p-3 rounded-xl bg-softBg"><b>Mulai Kecil</b><span class="block mt-1 text-textSecondary">Uji versi paling sederhana.</span></div></div></div>
             <div class="bg-navy text-white p-6 rounded-3xl shadow-xl"><div class="flex items-center gap-3 mb-4"><i data-lucide="wallet-cards" class="w-7 h-7 text-cyanAccent"></i><h2 class="font-heading font-bold text-xl">MoneyGuard</h2></div><p class="text-xs text-slate-300 mb-4">Simulasi pembagian uang untuk menjaga rencana keuangan tetap aman.</p><div class="space-y-3 text-xs"><label>Pemasukan bulanan<input id="money-income" type="number" value="3000000" min="0" class="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"></label><button onclick="calculateMoneyGuard()" class="w-full py-3 rounded-full bg-cyanAccent text-navy font-bold">Buat Rencana</button><div id="money-result" class="hidden p-4 rounded-xl bg-white/10 border border-white/10"></div></div></div>
           </div>
         </div>
@@ -1428,6 +1442,7 @@
         if (targetView) {
           targetView.classList.remove('hidden');
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          if(viewId==='lifepath')setTimeout(initOpportunityMap,100);
         }
       }
 
@@ -1658,7 +1673,61 @@
       function demoBooking(name){const el=document.getElementById('support-demo-message');if(!el)return;el.classList.remove('hidden');el.innerHTML=`<b>${escapeHtml(name)}</b><br>Alur prototype dibuka. Pada implementasi nyata, bagian ini akan terhubung dengan direktori mitra, jadwal, persetujuan privasi, dan backend.`;}
 
       function generateSelfMap(){const interests=[...document.querySelectorAll('.selfmap-interest:checked')].map(x=>x.value);const scores=[+document.getElementById('skill-communication').value,+document.getElementById('skill-digital').value,+document.getElementById('skill-problem').value,+document.getElementById('skill-organization').value];const labels=['Komunikasi','Digital','Problem Solving','Organisasi'];const max=Math.max(...scores);const strength=labels[scores.indexOf(max)];const title=document.getElementById('selfmap-title');const copy=document.getElementById('selfmap-copy');const rec=document.getElementById('selfmap-recommendations');const box=document.getElementById('selfmap-result');title.textContent=`Kekuatan utama: ${strength}`;copy.textContent=interests.length?`Minat yang kamu pilih: ${interests.join(', ')}. Profil ini merupakan pemetaan sederhana untuk membantu eksplorasi, bukan tes psikometrik.`:'Kamu belum memilih minat. Profil sementara dibuat dari pemetaan skill.';const items=[`Perkuat ${strength}`,interests[0]?`Eksplorasi jalur ${interests[0]}`:'Coba 2 bidang minat', 'Buat proyek kecil 7 hari'];rec.innerHTML=items.map(x=>`<span class="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs">${escapeHtml(x)}</span>`).join('');box.classList.remove('hidden');}
-      function showOpportunity(name){document.getElementById('opportunity-message').textContent=`${name}: pada implementasi nyata, sistem akan menampilkan peluang terverifikasi berdasarkan lokasi, skill, dan preferensi pengguna.`;}
+      // Opportunity Map: real OpenStreetMap tiles and user-triggered public POI lookup.
+      let opportunityMap=null,opportunityMarkers=null,opportunityPosition=null;
+      function initOpportunityMap(){
+        if(!document.getElementById('opportunity-map')||typeof L==='undefined'){
+          const p=document.getElementById('opportunity-message');if(p)p.textContent='Peta tidak bisa dimuat. Periksa koneksi internet dan pemblokiran CDN.';return;
+        }
+        if(opportunityMap){opportunityMap.invalidateSize();return;}
+        opportunityMap=L.map('opportunity-map').setView([-6.2088,106.8456],12);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(opportunityMap);
+        opportunityMarkers=L.layerGroup().addTo(opportunityMap);
+      }
+      function locateOpportunityUser(){
+        initOpportunityMap();const info=document.getElementById('opportunity-message');
+        if(!navigator.geolocation){info.textContent='Browser tidak mendukung lokasi. Geser peta untuk menentukan area.';return;}
+        info.textContent='Meminta izin lokasi untuk memusatkan peta...';
+        navigator.geolocation.getCurrentPosition(position=>{
+          const lat=position.coords.latitude,lon=position.coords.longitude;
+          opportunityMap.setView([lat,lon],14);
+          if(opportunityPosition)opportunityMap.removeLayer(opportunityPosition);
+          opportunityPosition=L.circleMarker([lat,lon],{radius:8,color:'#1558D6',fillOpacity:0.7}).addTo(opportunityMap).bindPopup('Lokasi perkiraan Anda');
+          info.textContent='Lokasi ditampilkan. Pilih kategori untuk mencari tempat terdekat. Koordinat hanya dikirim ke layanan pencarian ketika Anda memilih kategori.';
+        },()=>{info.textContent='Izin lokasi tidak diberikan atau lokasi gagal didapat. Anda bisa menggeser peta secara manual.';},{enableHighAccuracy:false,timeout:12000,maximumAge:120000});
+      }
+      async function findNearbyOpportunities(kind){
+        initOpportunityMap();if(!opportunityMap)return;
+        const info=document.getElementById('opportunity-message'),list=document.getElementById('opportunity-results');
+        const center=opportunityMap.getCenter(),lat=center.lat.toFixed(5),lon=center.lng.toFixed(5);
+        const filters={
+          umkm:'nwr["shop"]["name"]',
+          training:'nwr["amenity"~"^(college|language_school|training|school)$"]["name"]',
+          community:'nwr["amenity"~"^(community_centre|coworking_space|library)$"]["name"]'
+        };
+        if(!filters[kind])return;
+        info.textContent='Mencari lokasi pada area tengah peta...';list.replaceChildren();opportunityMarkers.clearLayers();
+        const query='[out:json][timeout:18];('+filters[kind]+'(around:3500,'+lat+','+lon+'););out center 35;';
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),23000);
+        try{
+          const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:new URLSearchParams({data:query}),signal:controller.signal});
+          if(!res.ok)throw Error('Layanan pencarian sedang sibuk ('+res.status+').');
+          const data=await res.json();const items=(data.elements||[]).filter(e=>e.tags?.name&&Number.isFinite(e.lat??e.center?.lat)&&Number.isFinite(e.lon??e.center?.lon));
+          const unique=new Set();let shown=0;
+          for(const item of items){
+            const y=item.lat??item.center.lat,x=item.lon??item.center.lon,name=item.tags.name,identity=name+'-'+y.toFixed(4)+'-'+x.toFixed(4);
+            if(unique.has(identity))continue;unique.add(identity);shown++;
+            const osm='https://www.openstreetmap.org/'+item.type+'/'+item.id;
+            L.marker([y,x]).addTo(opportunityMarkers).bindPopup(document.createTextNode(name));
+            const row=document.createElement('div');row.className='p-3 rounded-lg border border-borderLight';
+            const title=document.createElement('strong');title.className='block text-navy';title.textContent=name;
+            const link=document.createElement('a');link.href=osm;link.target='_blank';link.rel='noopener noreferrer';link.className='text-primaryBlue underline';link.textContent='Lihat detail lokasi di OpenStreetMap';
+            row.append(title,link);list.appendChild(row);
+          }
+          info.textContent=shown?shown+' lokasi tercatat ditemukan dalam radius 3,5 km. Pilih marker untuk melihat namanya.':'Belum ada tempat terdata untuk kategori ini. Geser peta atau coba kategori lain.';
+        }catch(err){info.textContent='Pencarian tidak tersedia saat ini. Coba lagi nanti atau pindahkan area peta. '+(err.name==='AbortError'?'Permintaan melewati batas waktu.':'');}
+        finally{clearTimeout(timer);}
+      }
       function calculateMoneyGuard(){const income=Math.max(0,+document.getElementById('money-income').value||0);const essentials=Math.round(income*.60),goals=Math.round(income*.25),flex=Math.round(income*.15);const el=document.getElementById('money-result');el.innerHTML=`<div class="space-y-2"><div class="flex justify-between"><span>Kebutuhan utama</span><b>Rp ${essentials.toLocaleString('id-ID')}</b></div><div class="flex justify-between"><span>Tabungan / tujuan</span><b>Rp ${goals.toLocaleString('id-ID')}</b></div><div class="flex justify-between"><span>Fleksibel</span><b>Rp ${flex.toLocaleString('id-ID')}</b></div><p class="text-[10px] text-slate-300 pt-2">Pembagian ini hanya contoh budgeting 60/25/15 dan bukan nasihat keuangan personal.</p></div>`;el.classList.remove('hidden');}
       function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));}
 
