@@ -1812,68 +1812,14 @@
         }
       }
 
-      // Initialize App & Icons on Page Load
-      window.onload = function() {
-  
-      // ================================================================
-      // FEATURE TRACKER DEMO ENGINE
-      // ================================================================
-      const demoReportsDefault = [
-        {url:'bonus-win.example', category:'Mirror / redirect', status:'Terverifikasi Berisiko', date:'Hari ini'},
-        {url:'fastspin.example', category:'Website judi / taruhan', status:'Dalam Verifikasi', date:'Kemarin'}
-      ];
-      let demoReports = JSON.parse(localStorage.getItem('aventionReports') || 'null') || demoReportsDefault;
-
-      function renderCommunityReports(){
-        const el=document.getElementById('community-report-list'); if(!el) return;
-        if(!demoReports.length){el.innerHTML='<div class="p-4 rounded-xl bg-slate-50 text-textSecondary">Belum ada laporan.</div>';return;}
-        el.innerHTML=demoReports.map((r,i)=>{
-          const badge=r.status.includes('Terverifikasi')?'bg-red-100 text-red-700':r.status.includes('Aman')?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-800';
-          return `<div class="p-4 rounded-xl border border-borderLight"><div class="flex justify-between gap-3"><div class="min-w-0"><b class="text-navy block truncate">${escapeHtml(r.url)}</b><span class="text-textSecondary">${escapeHtml(r.category)} • ${escapeHtml(r.date)}</span></div><span class="shrink-0 px-2 py-1 h-fit rounded-full font-bold ${badge}">${escapeHtml(r.status)}</span></div></div>`;
-        }).join('');
-      }
-      function submitCommunityReport(e){
-        e.preventDefault(); const url=document.getElementById('report-url').value.trim(); const cat=document.getElementById('report-category').value;
-        demoReports.unshift({url,category:cat,status:'Dalam Verifikasi',date:'Baru saja'}); localStorage.setItem('aventionReports',JSON.stringify(demoReports)); renderCommunityReports(); e.target.reset(); alert('Laporan demo berhasil ditambahkan ke antrean verifikasi.');
-      }
-      function clearDemoReports(){demoReports=[];localStorage.setItem('aventionReports','[]');renderCommunityReports();}
-      function checkRiskUrl(){
-        const input=document.getElementById('risk-url-input'); const box=document.getElementById('risk-url-result'); if(!input||!box) return; const value=input.value.trim();
-        if(!value){box.className='mt-5 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm';box.textContent='Masukkan URL terlebih dahulu.';box.classList.remove('hidden');return;}
-        const risky=/bet|slot|casino|judi|spin|win|bonus|togel/i.test(value);
-        box.className='mt-5 p-4 rounded-xl border text-sm '+(risky?'border-red-200 bg-red-50 text-red-700':'border-emerald-200 bg-emerald-50 text-emerald-700');
-        box.innerHTML=risky?'<b>Sinyal risiko ditemukan (simulasi).</b><br>Nama URL memiliki pola kata yang perlu diperiksa lebih lanjut. Hasil ini bukan verifikasi server nyata.':'<b>Tidak ada sinyal sederhana yang terdeteksi.</b><br>Versi pengembangan ini belum melakukan pemeriksaan jaringan/database nyata.'; box.classList.remove('hidden');
-      }
-
-      const missions=[
-        {id:'m1',title:'Check-in kondisi hari ini',xp:20},
-        {id:'m2',title:'Lakukan satu coping activity',xp:25},
-        {id:'m3',title:'Catat satu aktivitas positif',xp:25},
-        {id:'m4',title:'Tulis refleksi singkat',xp:30}
-      ];
-      let missionDone=JSON.parse(localStorage.getItem('aventionMissionDone')||'{}');
-      let positiveActivities=JSON.parse(localStorage.getItem('aventionPositive')||'[]');
-      function renderMissions(){
-        const el=document.getElementById('mission-list'); if(!el) return; let xp=0,done=0;
-        el.innerHTML=missions.map(m=>{const c=!!missionDone[m.id]; if(c){xp+=m.xp;done++;} return `<button onclick="toggleMission('${m.id}')" class="w-full p-4 rounded-xl border ${c?'border-emerald-200 bg-emerald-50':'border-borderLight bg-white'} text-left flex items-center justify-between"><span class="flex items-center gap-3"><span class="w-7 h-7 rounded-full ${c?'bg-successGreen text-white':'bg-slate-100 text-textSecondary'} flex items-center justify-center">${c?'✓':'○'}</span><span><b class="text-sm text-navy">${m.title}</b><small class="block text-textSecondary mt-0.5">+${m.xp} XP</small></span></span><span class="text-xs font-bold ${c?'text-successGreen':'text-textSecondary'}">${c?'SELESAI':'MULAI'}</span></button>`;}).join('');
-        const p=document.getElementById('mission-progress'); if(p)p.textContent=`${done}/${missions.length} selesai`; const x=document.getElementById('quest-xp'); if(x)x.textContent=`${xp} XP`;
-        renderBadges(done,xp);
-      }
-      function toggleMission(id){missionDone[id]=!missionDone[id];localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));renderMissions();}
-      function renderBadges(done,xp){const el=document.getElementById('badge-list');if(!el)return;const badges=[['First Step',done>=1],['Daily Hero',done>=4],['XP 100',xp>=100],['14 Day Streak',true]];const unlocked=badges.filter(b=>b[1]).length;const c=document.getElementById('quest-badge-count');if(c)c.textContent=unlocked;el.innerHTML=badges.map(([n,u])=>`<div class="p-3 rounded-xl text-center border ${u?'border-amber-200 bg-amber-50':'border-borderLight bg-slate-50 opacity-50'}"><div class="text-xl">${u?'🏅':'🔒'}</div><div class="text-[10px] font-bold text-navy mt-1">${n}</div></div>`).join('');}
-      function renderPositive(){const el=document.getElementById('positive-list');if(!el)return;el.innerHTML=positiveActivities.length?positiveActivities.slice(0,6).map((a,i)=>`<div class="flex justify-between gap-2 p-2.5 rounded-lg bg-slate-50"><span>${escapeHtml(a)}</span><button onclick="removePositive(${i})" class="text-textSecondary">×</button></div>`).join(''):'<p class="text-textSecondary">Belum ada aktivitas.</p>';}
-      function addPositiveActivity(){const i=document.getElementById('positive-activity');if(!i||!i.value.trim())return;positiveActivities.unshift(i.value.trim());localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));i.value='';renderPositive();}
-      function removePositive(i){positiveActivities.splice(i,1);localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));renderPositive();}
-
-      function sendBuddyMessage(e){e.preventDefault();const input=document.getElementById('buddy-input');const chat=document.getElementById('buddy-chat');const msg=input.value.trim();if(!msg)return;chat.innerHTML+=`<div class="ml-auto max-w-[80%] p-3 rounded-2xl rounded-tr-sm bg-primaryBlue text-white text-xs">${escapeHtml(msg)}</div>`;input.value='';setTimeout(()=>{let reply='Terima kasih sudah mencatat itu. Coba pilih satu langkah kecil yang aman untuk 10 menit berikutnya.';if(/dorongan|ingin main|judi|slot/i.test(msg)) reply='Kalau dorongannya sedang kuat, kamu bisa gunakan Jeda 10 Menit, menjauh dari metode pembayaran, atau menghubungi pendukung terpercaya. Jika situasinya terasa tidak aman, cari bantuan profesional atau layanan darurat setempat.';else if(/sedih|cemas|stres|marah/i.test(msg)) reply='Kondisi emosional bisa menjadi pemicu. Coba beri nama emosinya, nilai intensitas 1–5, lalu lakukan grounding atau aktivitas pengganti yang sederhana.';chat.innerHTML+=`<div class="max-w-[80%] p-3 rounded-2xl rounded-tl-sm bg-white border border-borderLight text-xs text-textPrimary">${reply}</div>`;chat.scrollTop=chat.scrollHeight;},450);chat.scrollTop=chat.scrollHeight;}
-      function setCheckin(v,btn){localStorage.setItem('aventionCheckin',String(v));document.querySelectorAll('#mood-buttons button').forEach(b=>b.classList.remove('ring-2','ring-primaryBlue'));btn.classList.add('ring-2','ring-primaryBlue');const n=document.getElementById('checkin-note');if(n)n.textContent=`Check-in tersimpan: intensitas ${v}/5.`;}
-      function saveReminder(){const t=document.getElementById('reminder-time').value;localStorage.setItem('aventionReminder',t);document.getElementById('reminder-status').textContent=`Reminder demo disimpan pukul ${t}. Browser tidak akan mengirim notifikasi tanpa backend/permission.`;}
-      function saveReflection(){const v=document.getElementById('reflection-input').value.trim();if(!v)return;localStorage.setItem('aventionReflection',v);document.getElementById('reflection-status').textContent='Refleksi tersimpan secara lokal pada browser demo ini.';missionDone.m4=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
-      function startCoping(name){document.getElementById('coping-status').textContent=`${name} dipilih. Luangkan 2–5 menit dan fokus pada langkahnya.`;missionDone.m2=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
-
-      function demoBooking(name){const el=document.getElementById('support-demo-message');if(!el)return;el.classList.remove('hidden');el.innerHTML=`<b>${escapeHtml(name)}</b><br>Alur versi pengembangan dibuka. Pada implementasi nyata, bagian ini akan terhubung dengan direktori mitra, jadwal, persetujuan privasi, dan backend.`;}
-      function openSupportDetail(type){
+     function openSupportDetail(type){
         const box = document.getElementById("support-detail");
+
+        if(!box){
+          console.error("support-detail tidak ditemukan");
+          return;
+        }
+
         let content = "";
 
         if(type === "mentor"){
@@ -1969,6 +1915,68 @@
           behavior:"smooth"
         });
       }
+        
+      // Initialize App & Icons on Page Load
+      window.onload = function() {
+  
+      // ================================================================
+      // FEATURE TRACKER DEMO ENGINE
+      // ================================================================
+      const demoReportsDefault = [
+        {url:'bonus-win.example', category:'Mirror / redirect', status:'Terverifikasi Berisiko', date:'Hari ini'},
+        {url:'fastspin.example', category:'Website judi / taruhan', status:'Dalam Verifikasi', date:'Kemarin'}
+      ];
+      let demoReports = JSON.parse(localStorage.getItem('aventionReports') || 'null') || demoReportsDefault;
+
+      function renderCommunityReports(){
+        const el=document.getElementById('community-report-list'); if(!el) return;
+        if(!demoReports.length){el.innerHTML='<div class="p-4 rounded-xl bg-slate-50 text-textSecondary">Belum ada laporan.</div>';return;}
+        el.innerHTML=demoReports.map((r,i)=>{
+          const badge=r.status.includes('Terverifikasi')?'bg-red-100 text-red-700':r.status.includes('Aman')?'bg-emerald-100 text-emerald-700':'bg-amber-100 text-amber-800';
+          return `<div class="p-4 rounded-xl border border-borderLight"><div class="flex justify-between gap-3"><div class="min-w-0"><b class="text-navy block truncate">${escapeHtml(r.url)}</b><span class="text-textSecondary">${escapeHtml(r.category)} • ${escapeHtml(r.date)}</span></div><span class="shrink-0 px-2 py-1 h-fit rounded-full font-bold ${badge}">${escapeHtml(r.status)}</span></div></div>`;
+        }).join('');
+      }
+      function submitCommunityReport(e){
+        e.preventDefault(); const url=document.getElementById('report-url').value.trim(); const cat=document.getElementById('report-category').value;
+        demoReports.unshift({url,category:cat,status:'Dalam Verifikasi',date:'Baru saja'}); localStorage.setItem('aventionReports',JSON.stringify(demoReports)); renderCommunityReports(); e.target.reset(); alert('Laporan demo berhasil ditambahkan ke antrean verifikasi.');
+      }
+      function clearDemoReports(){demoReports=[];localStorage.setItem('aventionReports','[]');renderCommunityReports();}
+      function checkRiskUrl(){
+        const input=document.getElementById('risk-url-input'); const box=document.getElementById('risk-url-result'); if(!input||!box) return; const value=input.value.trim();
+        if(!value){box.className='mt-5 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm';box.textContent='Masukkan URL terlebih dahulu.';box.classList.remove('hidden');return;}
+        const risky=/bet|slot|casino|judi|spin|win|bonus|togel/i.test(value);
+        box.className='mt-5 p-4 rounded-xl border text-sm '+(risky?'border-red-200 bg-red-50 text-red-700':'border-emerald-200 bg-emerald-50 text-emerald-700');
+        box.innerHTML=risky?'<b>Sinyal risiko ditemukan (simulasi).</b><br>Nama URL memiliki pola kata yang perlu diperiksa lebih lanjut. Hasil ini bukan verifikasi server nyata.':'<b>Tidak ada sinyal sederhana yang terdeteksi.</b><br>Versi pengembangan ini belum melakukan pemeriksaan jaringan/database nyata.'; box.classList.remove('hidden');
+      }
+
+      const missions=[
+        {id:'m1',title:'Check-in kondisi hari ini',xp:20},
+        {id:'m2',title:'Lakukan satu coping activity',xp:25},
+        {id:'m3',title:'Catat satu aktivitas positif',xp:25},
+        {id:'m4',title:'Tulis refleksi singkat',xp:30}
+      ];
+      let missionDone=JSON.parse(localStorage.getItem('aventionMissionDone')||'{}');
+      let positiveActivities=JSON.parse(localStorage.getItem('aventionPositive')||'[]');
+      function renderMissions(){
+        const el=document.getElementById('mission-list'); if(!el) return; let xp=0,done=0;
+        el.innerHTML=missions.map(m=>{const c=!!missionDone[m.id]; if(c){xp+=m.xp;done++;} return `<button onclick="toggleMission('${m.id}')" class="w-full p-4 rounded-xl border ${c?'border-emerald-200 bg-emerald-50':'border-borderLight bg-white'} text-left flex items-center justify-between"><span class="flex items-center gap-3"><span class="w-7 h-7 rounded-full ${c?'bg-successGreen text-white':'bg-slate-100 text-textSecondary'} flex items-center justify-center">${c?'✓':'○'}</span><span><b class="text-sm text-navy">${m.title}</b><small class="block text-textSecondary mt-0.5">+${m.xp} XP</small></span></span><span class="text-xs font-bold ${c?'text-successGreen':'text-textSecondary'}">${c?'SELESAI':'MULAI'}</span></button>`;}).join('');
+        const p=document.getElementById('mission-progress'); if(p)p.textContent=`${done}/${missions.length} selesai`; const x=document.getElementById('quest-xp'); if(x)x.textContent=`${xp} XP`;
+        renderBadges(done,xp);
+      }
+      function toggleMission(id){missionDone[id]=!missionDone[id];localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));renderMissions();}
+      function renderBadges(done,xp){const el=document.getElementById('badge-list');if(!el)return;const badges=[['First Step',done>=1],['Daily Hero',done>=4],['XP 100',xp>=100],['14 Day Streak',true]];const unlocked=badges.filter(b=>b[1]).length;const c=document.getElementById('quest-badge-count');if(c)c.textContent=unlocked;el.innerHTML=badges.map(([n,u])=>`<div class="p-3 rounded-xl text-center border ${u?'border-amber-200 bg-amber-50':'border-borderLight bg-slate-50 opacity-50'}"><div class="text-xl">${u?'🏅':'🔒'}</div><div class="text-[10px] font-bold text-navy mt-1">${n}</div></div>`).join('');}
+      function renderPositive(){const el=document.getElementById('positive-list');if(!el)return;el.innerHTML=positiveActivities.length?positiveActivities.slice(0,6).map((a,i)=>`<div class="flex justify-between gap-2 p-2.5 rounded-lg bg-slate-50"><span>${escapeHtml(a)}</span><button onclick="removePositive(${i})" class="text-textSecondary">×</button></div>`).join(''):'<p class="text-textSecondary">Belum ada aktivitas.</p>';}
+      function addPositiveActivity(){const i=document.getElementById('positive-activity');if(!i||!i.value.trim())return;positiveActivities.unshift(i.value.trim());localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));i.value='';renderPositive();}
+      function removePositive(i){positiveActivities.splice(i,1);localStorage.setItem('aventionPositive',JSON.stringify(positiveActivities));renderPositive();}
+
+      function sendBuddyMessage(e){e.preventDefault();const input=document.getElementById('buddy-input');const chat=document.getElementById('buddy-chat');const msg=input.value.trim();if(!msg)return;chat.innerHTML+=`<div class="ml-auto max-w-[80%] p-3 rounded-2xl rounded-tr-sm bg-primaryBlue text-white text-xs">${escapeHtml(msg)}</div>`;input.value='';setTimeout(()=>{let reply='Terima kasih sudah mencatat itu. Coba pilih satu langkah kecil yang aman untuk 10 menit berikutnya.';if(/dorongan|ingin main|judi|slot/i.test(msg)) reply='Kalau dorongannya sedang kuat, kamu bisa gunakan Jeda 10 Menit, menjauh dari metode pembayaran, atau menghubungi pendukung terpercaya. Jika situasinya terasa tidak aman, cari bantuan profesional atau layanan darurat setempat.';else if(/sedih|cemas|stres|marah/i.test(msg)) reply='Kondisi emosional bisa menjadi pemicu. Coba beri nama emosinya, nilai intensitas 1–5, lalu lakukan grounding atau aktivitas pengganti yang sederhana.';chat.innerHTML+=`<div class="max-w-[80%] p-3 rounded-2xl rounded-tl-sm bg-white border border-borderLight text-xs text-textPrimary">${reply}</div>`;chat.scrollTop=chat.scrollHeight;},450);chat.scrollTop=chat.scrollHeight;}
+      function setCheckin(v,btn){localStorage.setItem('aventionCheckin',String(v));document.querySelectorAll('#mood-buttons button').forEach(b=>b.classList.remove('ring-2','ring-primaryBlue'));btn.classList.add('ring-2','ring-primaryBlue');const n=document.getElementById('checkin-note');if(n)n.textContent=`Check-in tersimpan: intensitas ${v}/5.`;}
+      function saveReminder(){const t=document.getElementById('reminder-time').value;localStorage.setItem('aventionReminder',t);document.getElementById('reminder-status').textContent=`Reminder demo disimpan pukul ${t}. Browser tidak akan mengirim notifikasi tanpa backend/permission.`;}
+      function saveReflection(){const v=document.getElementById('reflection-input').value.trim();if(!v)return;localStorage.setItem('aventionReflection',v);document.getElementById('reflection-status').textContent='Refleksi tersimpan secara lokal pada browser demo ini.';missionDone.m4=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
+      function startCoping(name){document.getElementById('coping-status').textContent=`${name} dipilih. Luangkan 2–5 menit dan fokus pada langkahnya.`;missionDone.m2=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
+
+      function demoBooking(name){const el=document.getElementById('support-demo-message');if(!el)return;el.classList.remove('hidden');el.innerHTML=`<b>${escapeHtml(name)}</b><br>Alur versi pengembangan dibuka. Pada implementasi nyata, bagian ini akan terhubung dengan direktori mitra, jadwal, persetujuan privasi, dan backend.`;}
+      
 
       function generateSelfMap(){const interests=[...document.querySelectorAll('.selfmap-interest:checked')].map(x=>x.value);const scores=[+document.getElementById('skill-communication').value,+document.getElementById('skill-digital').value,+document.getElementById('skill-problem').value,+document.getElementById('skill-organization').value];const labels=['Komunikasi','Digital','Problem Solving','Organisasi'];const max=Math.max(...scores);const strength=labels[scores.indexOf(max)];const title=document.getElementById('selfmap-title');const copy=document.getElementById('selfmap-copy');const rec=document.getElementById('selfmap-recommendations');const box=document.getElementById('selfmap-result');title.textContent=`Kekuatan utama: ${strength}`;copy.textContent=interests.length?`Minat yang kamu pilih: ${interests.join(', ')}. Profil ini merupakan pemetaan sederhana untuk membantu eksplorasi, bukan tes psikometrik.`:'Kamu belum memilih minat. Profil sementara dibuat dari pemetaan skill.';const items=[`Perkuat ${strength}`,interests[0]?`Eksplorasi jalur ${interests[0]}`:'Coba 2 bidang minat', 'Buat proyek kecil 7 hari'];rec.innerHTML=items.map(x=>`<span class="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs">${escapeHtml(x)}</span>`).join('');box.classList.remove('hidden');}
       // Opportunity Map: real OpenStreetMap tiles and user-triggered public POI lookup.
