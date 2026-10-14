@@ -1872,6 +1872,103 @@
       function startCoping(name){document.getElementById('coping-status').textContent=`${name} dipilih. Luangkan 2–5 menit dan fokus pada langkahnya.`;missionDone.m2=true;localStorage.setItem('aventionMissionDone',JSON.stringify(missionDone));}
 
       function demoBooking(name){const el=document.getElementById('support-demo-message');if(!el)return;el.classList.remove('hidden');el.innerHTML=`<b>${escapeHtml(name)}</b><br>Alur versi pengembangan dibuka. Pada implementasi nyata, bagian ini akan terhubung dengan direktori mitra, jadwal, persetujuan privasi, dan backend.`;}
+      function openSupportDetail(type){
+        const box = document.getElementById("support-detail");
+        let content = "";
+
+        if(type === "mentor"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Mentor Session
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Arif Rahman, CFP<br>
+              Mentor Pemulihan Finansial<br><br>
+              WhatsApp: 0821-5678-9012
+            </p>
+          `;
+        }
+
+
+        if(type === "psychology"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Psychological Support
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Dr. Raka Pratama, M.Psi.<br>
+              Nadia Putri, S.Psi.<br><br>
+              Pendamping psikologis pemulihan.
+            </p>
+          `;
+        }
+
+
+        if(type === "spiritual"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Spiritual Recovery Program
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Program refleksi diri, motivasi,
+              dan penguatan proses perubahan.
+            </p>
+          `;
+        }
+
+
+        if(type === "rehab"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Program Rehabilitasi
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Pendampingan intensif untuk membantu
+              proses pemulihan pengguna.
+            </p>
+          `;
+        }
+
+
+        if(type === "community"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Recovery Community
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Komunitas Bangkit Bersama<br>
+              WhatsApp: 0852-6789-0123
+            </p>
+          `;
+        }
+
+
+        if(type === "family"){
+          content = `
+            <h2 class="font-bold text-xl text-navy">
+              Family Link
+            </h2>
+
+            <p class="text-sm text-textSecondary mt-3">
+              Tambahkan keluarga atau orang terpercaya
+              sebagai support system pemulihan.
+            </p>
+          `;
+        }
+
+
+        box.innerHTML = content;
+        box.classList.remove("hidden");
+
+        box.scrollIntoView({
+          behavior:"smooth"
+        });
+      }
 
       function generateSelfMap(){const interests=[...document.querySelectorAll('.selfmap-interest:checked')].map(x=>x.value);const scores=[+document.getElementById('skill-communication').value,+document.getElementById('skill-digital').value,+document.getElementById('skill-problem').value,+document.getElementById('skill-organization').value];const labels=['Komunikasi','Digital','Problem Solving','Organisasi'];const max=Math.max(...scores);const strength=labels[scores.indexOf(max)];const title=document.getElementById('selfmap-title');const copy=document.getElementById('selfmap-copy');const rec=document.getElementById('selfmap-recommendations');const box=document.getElementById('selfmap-result');title.textContent=`Kekuatan utama: ${strength}`;copy.textContent=interests.length?`Minat yang kamu pilih: ${interests.join(', ')}. Profil ini merupakan pemetaan sederhana untuk membantu eksplorasi, bukan tes psikometrik.`:'Kamu belum memilih minat. Profil sementara dibuat dari pemetaan skill.';const items=[`Perkuat ${strength}`,interests[0]?`Eksplorasi jalur ${interests[0]}`:'Coba 2 bidang minat', 'Buat proyek kecil 7 hari'];rec.innerHTML=items.map(x=>`<span class="px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs">${escapeHtml(x)}</span>`).join('');box.classList.remove('hidden');}
       // Opportunity Map: real OpenStreetMap tiles and user-triggered public POI lookup.
