@@ -1812,8 +1812,8 @@
         }
       }
 
-     function openSupportDetail(type){
-        const box = document.getElementById("support-detail");
+    function openSupportDetail(type){alert(type);
+    const box = document.getElementById("support-detail");
 
         if(!box){
           console.error("support-detail tidak ditemukan");
@@ -1911,9 +1911,6 @@
         box.innerHTML = content;
         box.classList.remove("hidden");
 
-        box.scrollIntoView({
-          behavior:"smooth"
-        });
       }
         
       // Initialize App & Icons on Page Load
